@@ -1,0 +1,22 @@
+body {
+  margin: 8px;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.card {
+  flex: 1;
+  margin: 8px;
+  background: lightpink;
+}
+
+.card__item {
+  background: coral;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}

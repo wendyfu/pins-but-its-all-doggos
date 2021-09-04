@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>PINS Doggos</title>
+  <link rel="stylesheet" href="./styles/main.css" />
+</head>
+
+<body>
+  <div id="root">
+  </div>
+  <script>    
+    var COL_WIDTH = 256;
+    var root;
+
+    function onLoad() {
+      let rootElement = document.getElementById("root");
+
+      let cells = []
+      for (let i=1; i<=120; i++) {
+        let cardItem = document.createElement("div");
+        cardItem.className = "card__item";
+        let h = Math.ceil((Math.random() * 100)) + 250 + 'px';
+        cardItem.style.height = h;
+        cardItem.style.lineHeight = h;
+        cardItem.innerHTML = `Item ${i}`;
+
+        let card = document.createElement("div");
+        card.className = "card";
+        card.appendChild(cardItem);
+
+        rootElement.appendChild(card);
+        let cardStyle = getComputedStyle(card);
+        
+        cells.push({
+          element: card,
+          outerHeight: parseInt(cardStyle.marginTop) + card.offsetHeight + parseInt(cardStyle.marginBottom)
+        })
+      }
+
+      root = {
+        element: rootElement,
+        noOfColumns: 0,
+        cells: cells
+      }
+      
+      onResize();
+    }
+
+    function onResize() {
+      var newNoOfColumns = Math.floor(root.element.offsetWidth / COL_WIDTH);
+
+      if (newNoOfColumns == root.noOfColumns) {
+        return;
+      }
+
+      root.noOfColumns = newNoOfColumns;
+      let columns = Array.from(new Array(root.noOfColumns)).map(function(column) {
+        return {
+          'cells': new Array(),
+          'outerHeight': 0
+        };
+      });
+
+      let idx = 0;
+      for (let cell of root.cells) {
+        columns[idx].cells.push(cell);
+        columns[idx].outerHeight += cell.outerHeight;
+        idx = (idx + 1) % newNoOfColumns;
+      }
+
+      let masonryHeight = Math.max(...columns.map( function(column) {
+        return column.outerHeight;
+      }));
+
+      let order = 0;
+      for (let column of columns) {
+        for (let cell of column.cells) {
+          cell.element.style.order = order++;
+          cell.element.style.flexBasis = 0;
+        }
+        column.cells[column.cells.length - 1].element.style.flexBasis = column.cells[column.cells.length - 1].element.offsetHeight + (masonryHeight - column.outerHeight) + 'px';
+      }
+
+      root.element.style.maxHeight = masonryHeight + 'px';
+    }
+
+    window.onload = onLoad;
+    window.onresize = onResize;
+
+  </script>
+</body>
+
+</html>
