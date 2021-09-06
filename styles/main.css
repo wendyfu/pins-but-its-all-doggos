@@ -1,5 +1,6 @@
 body {
-  margin: 8px;
+  /* margin: 8px; */
+  margin: 0;
 }
 
 #root {
@@ -10,13 +11,13 @@ body {
 
 .card {
   flex: 1;
-  margin: 8px;
-  background: lightpink;
+  /* margin: 8px; */
+  width: 256px;
+  display: inline-flex;
 }
 
 .card__item {
-  background: coral;
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
+  border-radius: 16px;
+  width: 100%;
+  height: fit-content;
 }
