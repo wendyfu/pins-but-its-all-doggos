@@ -27,10 +27,10 @@ function View() {
   this.noOfCols = 0;
   this.cardsElements = [];
 
-  this.onResize = function() {
+  this.renderColumns = function() {
     let newNoOfCols = Math.floor(this.rootElement.offsetWidth / COL_WIDTH);
 
-    if (newNoOfCols == this.noOfCols) {
+    if (newNoOfCols == this.noOfCols || newNoOfCols == 0) {
       return;
     }
 
@@ -96,7 +96,8 @@ function View() {
   
   this.populateLayout = async function(cards) {
     if (!cards) {
-      this.onResize();
+      this.renderColumns();
+      return;
     }    
 
     let images = [];
@@ -109,7 +110,7 @@ function View() {
       this.populateCard(cardItems[i]);
     }
 
-    this.onResize();    
+    this.renderColumns();    
   }
 }
 
@@ -119,5 +120,5 @@ window.onload = function() {
   let controller = new Controller(model, view);
 
   controller.init(model, view);
-  window.onresize = view.onResize.bind(view);
+  window.onresize = view.populateLayout.bind(view);
 }
