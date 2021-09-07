@@ -59,8 +59,11 @@ function View() {
         card.element.style.order = order++;
         card.element.style.flexBasis = 0;
       }
-      column.cards[column.cards.length - 1].element.style.flexBasis =
-        column.cards[column.cards.length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
+
+      if (column.cards.length) {
+        column.cards[column.cards.length - 1].element.style.flexBasis =
+          column.cards[column.cards.length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
+      }
     }
 
     this.rootElement.style.maxHeight = masonryHeight + 'px';
@@ -116,4 +119,5 @@ window.onload = function() {
   let controller = new Controller(model, view);
 
   controller.init(model, view);
+  window.onresize = view.onResize.bind(view);
 }
