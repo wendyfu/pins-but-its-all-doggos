@@ -87,7 +87,7 @@ function View() {
 
     this.cardsElements.push({
       element: card,
-      outerHeight: card.getBoundingClientRect().height
+      outerHeight: parseInt(cardStyle.marginTop) + card.getBoundingClientRect().height + parseInt(cardStyle.marginBottom)
     })
   }
   
