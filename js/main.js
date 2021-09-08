@@ -40,28 +40,7 @@ function View() {
   this.cardElements = [];
   this.loadMoreSentinel;
 
-  this.populateColumns = function() {
-    let newNoOfCols = Math.floor(this.rootElement.offsetWidth / COL_WIDTH);
-
-    if (newNoOfCols == this.noOfCols || newNoOfCols === 0) {
-      return;
-    }
-
-    this.noOfCols = newNoOfCols;
-    this.fillColIdx = 0;
-    this.columns = Array.from(new Array(this.noOfCols)).map(function(_col) {
-      return {
-        'cards': new Array(),
-        'outerHeight': 0
-      };
-    });
-
-    for (let card of this.cardElements) {
-      this.columns[this.fillColIdx].cards.push(card);
-      this.columns[this.fillColIdx].outerHeight += card.outerHeight;
-      this.fillColIdx = (this.fillColIdx + 1) % newNoOfCols;
-    }
-
+  this.adjustLayoutHeight = function() {
     let masonryHeight = Math.max(...this.columns.map(function(column) {
       return column.outerHeight;
     }));
@@ -77,60 +56,51 @@ function View() {
         card.element.style.flexBasis = 0;
       }
 
-      let length = column.cards.length;
-      if (length) {
-        column.cards[length - 1].element.style.flexBasis =
-          column.cards[length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
-      }
+      let lastIdx = column.cards.length - 1;
+      column.cards[lastIdx].element.style.flexBasis =
+        column.cards[lastIdx].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
 
       if (column.outerHeight === fetchMoreColHeight) {
-        column.cards[length - 1].element.appendChild(this.fetchMoreSentinel);
+        column.cards[lastIdx].element.appendChild(this.fetchMoreSentinel);
       }
     }
 
     this.rootElement.style.maxHeight = masonryHeight + 'px';
+  }
+
+  this.populateColumns = function() {
+    let newNoOfCols = Math.floor(this.rootElement.offsetWidth / COL_WIDTH);
+
+    if (newNoOfCols == this.noOfCols || newNoOfCols === 0) {
+      return;
+    }
+
+    this.noOfCols = newNoOfCols;
+    this.fillColIdx = 0;
+    this.columns = Array.from(new Array(newNoOfCols)).map(function(_col) {
+      return {
+        'cards': new Array(),
+        'outerHeight': 0
+      };
+    });
+
+    for (let card of this.cardElements) {
+      this.columns[this.fillColIdx].cards.push(card);
+      this.columns[this.fillColIdx].outerHeight += card.outerHeight;
+      this.fillColIdx = (this.fillColIdx + 1) % newNoOfCols;
+    }
+
+    this.adjustLayoutHeight();
   }  
 
   this.appendToColumns = function(cards) {
-    for (let column of this.columns) {
-      let length = column.cards.length;        
-      column.cards[length - 1].flexBasis = 0;
-    }
-
     for (let card of cards) {
       this.columns[this.fillColIdx].cards.push(card);
       this.columns[this.fillColIdx].outerHeight += card.outerHeight;
-
       this.fillColIdx = (this.fillColIdx + 1) % this.noOfCols;
     }
-
-    let masonryHeight = Math.max(...this.columns.map(function(column) {
-      return column.outerHeight;
-    }));
-
-    let fetchMoreColHeight = Math.min(...this.columns.map(function(column) {
-      return column.outerHeight;
-    }));
-
-    cardOrder = 0;
-    for (let column of this.columns) {      
-      for (let card of column.cards) {
-        card.element.style.order = cardOrder++;
-        card.element.style.flexBasis = 0;        
-      }
-
-      let length = column.cards.length;
-      if (length) {
-        column.cards[length - 1].element.style.flexBasis =
-          column.cards[length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
-      }
-
-      if (column.outerHeight === fetchMoreColHeight) {
-        column.cards[length - 1].element.appendChild(this.fetchMoreSentinel);
-      }
-    }
-
-    this.rootElement.style.maxHeight = masonryHeight + 'px';
+    
+    this.adjustLayoutHeight();    
   }
 
   this.populateCard = function(cardItem) {
