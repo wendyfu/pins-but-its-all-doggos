@@ -29,6 +29,7 @@ function Controller(model, view) {
 
 function View() {
   const COL_WIDTH = 256;
+  const TOP_BOT_MARGIN = 16;
 
   this.rootElement = document.getElementById("root");
   
@@ -142,7 +143,7 @@ function View() {
     
     let cardElement = {
       element: card,
-      outerHeight: parseInt(cardStyle.marginTop) + card.getBoundingClientRect().height + parseInt(cardStyle.marginBottom)
+      outerHeight: TOP_BOT_MARGIN + card.getBoundingClientRect().height + TOP_BOT_MARGIN
     };
     this.cardElements.push(cardElement);
 
