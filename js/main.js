@@ -1,10 +1,10 @@
 function Model() {
-  this.cards = [];
-
   this.fetchDoggos = function() {
-    return fetch("https://dog.ceo/api/breeds/image/random/50")
+    return fetch("https://dog.ceo/api/breeds/image/random/25")
       .then(function(response) {
         return response.json();
+      }).then(function(result) {
+        return result.message;
       });
   };
 }
@@ -14,59 +14,139 @@ function Controller(model, view) {
   this.view = view;
   
   this.init = async function() {
-    let result = await this.model.fetchDoggos();
-    this.model.cards = result.message;
+    let initialDoggos = await this.model.fetchDoggos();
 
-    this.view.populateLayout(this.model.cards)
+    this.handleIntersection = async function(entries) {
+      if (entries.some(entry => entry.intersectionRatio > 0)) {
+        let moreDoggos = await this.model.fetchDoggos();
+        this.view.populateLayout(moreDoggos, true);
+      }
+    }
+    this.handleIntersection = this.handleIntersection.bind(this);
+    this.view.init(initialDoggos, this.handleIntersection)
   }
 }
 
 function View() {
   const COL_WIDTH = 256;
-  this.rootElement = document.getElementById("root");
-  this.noOfCols = 0;
-  this.cardsElements = [];
 
-  this.renderColumns = function() {
+  this.rootElement = document.getElementById("root");
+  
+  this.noOfCols = 0;
+  this.columns;
+  this.fillColIdx = 0;
+  
+  this.cardElements = [];
+  this.loadMoreSentinel;
+
+  this.populateColumns = function() {
     let newNoOfCols = Math.floor(this.rootElement.offsetWidth / COL_WIDTH);
 
-    if (newNoOfCols == this.noOfCols || newNoOfCols == 0) {
+    if (newNoOfCols == this.noOfCols || newNoOfCols === 0) {
       return;
     }
 
     this.noOfCols = newNoOfCols;
-    let columns = Array.from(new Array(this.noOfCols)).map(function(_col) {
+    this.fillColIdx = 0;
+    this.columns = Array.from(new Array(this.noOfCols)).map(function(_col) {
       return {
         'cards': new Array(),
         'outerHeight': 0
       };
     });
 
-    let idx = 0;
-    for (let card of this.cardsElements) {
-      columns[idx].cards.push(card);
-      columns[idx].outerHeight += card.outerHeight;
-      idx = (idx + 1) % newNoOfCols;
+    for (let card of this.cardElements) {
+      this.columns[this.fillColIdx].cards.push(card);
+      this.columns[this.fillColIdx].outerHeight += card.outerHeight;
+      this.fillColIdx = (this.fillColIdx + 1) % newNoOfCols;
     }
 
-    let masonryHeight = Math.max(...columns.map(function(column) {
+    let masonryHeight = Math.max(...this.columns.map(function(column) {
       return column.outerHeight;
     }));
 
-    let order = 0;
-    for (let column of columns) {
+    let fetchMoreColHeight = Math.min(...this.columns.map(function(column) {
+      return column.outerHeight;
+    }));
+
+    cardOrder = 0;
+    for (let column of this.columns) {
       for (let card of column.cards) {
-        card.element.style.order = order++;
+        card.element.style.order = cardOrder++;
         card.element.style.flexBasis = 0;
       }
 
-      if (column.cards.length) {
-        column.cards[column.cards.length - 1].element.style.flexBasis =
-          column.cards[column.cards.length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
+      let length = column.cards.length;
+      if (length) {
+        column.cards[length - 1].element.style.flexBasis =
+          column.cards[length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
+      }
+
+      if (column.outerHeight === fetchMoreColHeight) {
+        column.cards[length - 1].element.appendChild(this.fetchMoreSentinel);
       }
     }
 
     this.rootElement.style.maxHeight = masonryHeight + 'px';
+  }  
+
+  this.appendToColumns = function(cards) {
+    for (let column of this.columns) {
+      let length = column.cards.length;        
+      column.cards[length - 1].flexBasis = 0;
+    }
+
+    for (let card of cards) {
+      this.columns[this.fillColIdx].cards.push(card);
+      this.columns[this.fillColIdx].outerHeight += card.outerHeight;
+
+      this.fillColIdx = (this.fillColIdx + 1) % this.noOfCols;
+    }
+
+    let masonryHeight = Math.max(...this.columns.map(function(column) {
+      return column.outerHeight;
+    }));
+
+    let fetchMoreColHeight = Math.min(...this.columns.map(function(column) {
+      return column.outerHeight;
+    }));
+
+    cardOrder = 0;
+    for (let column of this.columns) {      
+      for (let card of column.cards) {
+        card.element.style.order = cardOrder++;
+        card.element.style.flexBasis = 0;        
+      }
+
+      let length = column.cards.length;
+      if (length) {
+        column.cards[length - 1].element.style.flexBasis =
+          column.cards[length - 1].element.getBoundingClientRect().height + (masonryHeight - column.outerHeight) + 'px';
+      }
+
+      if (column.outerHeight === fetchMoreColHeight) {
+        column.cards[length - 1].element.appendChild(this.fetchMoreSentinel);
+      }
+    }
+
+    this.rootElement.style.maxHeight = masonryHeight + 'px';
+  }
+
+  this.populateCard = function(cardItem) {
+    let card = document.createElement("div");
+    card.className = "card";
+    card.appendChild(cardItem);
+
+    this.rootElement.appendChild(card);
+    let cardStyle = getComputedStyle(card);
+    
+    let cardElement = {
+      element: card,
+      outerHeight: parseInt(cardStyle.marginTop) + card.getBoundingClientRect().height + parseInt(cardStyle.marginBottom)
+    };
+    this.cardElements.push(cardElement);
+
+    return cardElement;
   }
 
   this.populateImage = function(url) {
@@ -79,38 +159,34 @@ function View() {
       cardItem.src = url;      
     });
   }
-
-  this.populateCard = function(cardItem) {
-    let card = document.createElement("div");
-    card.className = "card";
-    card.appendChild(cardItem);
-
-    this.rootElement.appendChild(card);
-    let cardStyle = getComputedStyle(card);
-
-    this.cardsElements.push({
-      element: card,
-      outerHeight: parseInt(cardStyle.marginTop) + card.getBoundingClientRect().height + parseInt(cardStyle.marginBottom)
-    })
-  }
   
-  this.populateLayout = async function(cards) {
-    if (!cards) {
-      this.renderColumns();
-      return;
-    }    
-
+  this.populateLayout = async function(cards, isAppendOnly) {
     let images = [];
     for (let i=0; i<cards.length; i++) {
       images.push(this.populateImage(cards[i]));
     }
 
     let cardItems = await Promise.all(images);
+    let newCards = [];
     for (let i=0; i<cardItems.length; i++) {
-      this.populateCard(cardItems[i]);
+      newCards.push(this.populateCard(cardItems[i]));
     }
 
-    this.renderColumns();    
+    if (isAppendOnly) {
+      this.appendToColumns(newCards);      
+    } else {
+      this.populateColumns();
+    }
+  }
+
+  this.init = async function(cards, fetchMore) {
+    this.fetchMoreSentinel = document.createElement("div");
+    this.fetchMoreSentinel.id = 'load-more'
+
+    let intersectionObserver = new IntersectionObserver(fetchMore);
+    intersectionObserver.observe(this.fetchMoreSentinel);
+
+    this.populateLayout(cards, false);
   }
 }
 
@@ -120,5 +196,5 @@ window.onload = function() {
   let controller = new Controller(model, view);
 
   controller.init(model, view);
-  window.onresize = view.populateLayout.bind(view);
+  window.onresize = view.populateColumns.bind(view);
 }
