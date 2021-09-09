@@ -49,7 +49,7 @@ function View() {
       return column.outerHeight;
     }));
 
-    cardOrder = 0;
+    let cardOrder = 0;
     for (let column of this.columns) {
       for (let card of column.cards) {
         card.element.style.order = cardOrder++;
