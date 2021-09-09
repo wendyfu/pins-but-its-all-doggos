@@ -1,12 +1,12 @@
 # System Design
-1. Requirements
-2. Workflow
-3. Data Entities
-4. Data API
-5. Project Structure
-6. Masonry Layout
-7. Infinite Scroll
-8. Optimization
+1. [Requirements](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#requirements)
+2. [Workflow](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#workflow)
+3. [Data Entities](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-entities)
+4. [Data API](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-api)
+5. [Project Structure](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-api)
+6. [Masonry Layout](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-api)
+7. [Infinite Scroll](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-api)
+8. [Optimization](https://github.com/wendyfu/pins-but-its-all-doggos/blob/master/system-design.md#data-api)
 
 ## Requirements
 - Single page application
