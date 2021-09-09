@@ -13,9 +13,7 @@
 - Infinite scroll
 
 ## Workflow
-1. Fetch dog pictures
-2. Populate cards
-3. Listen to Infinite Scroll event 
+![image](https://user-images.githubusercontent.com/13144571/132617530-b4fc10b0-e6d4-4e2c-a151-d76ac3beeb0c.png)
 
 ## Data API
 `https://dog.ceo/api/breeds/image/random/{num_of_dogs}`
